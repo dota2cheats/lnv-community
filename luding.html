@@ -68,12 +68,17 @@
 
 
     // Логика захвата токена Дискорда после входа
+    // Логика захвата токена Дискорда после входа
     window.onload = function() {
         const hash = window.location.hash;
         if (hash.includes("access_token")) {
             const token = new URLSearchParams(hash.replace("#", "?")).get("access_token");
-            fetch("https://discord.com", {
-                headers: { Authorization: `Bearer ${token}` }
+            
+            const apiBase = "https://discord.com";
+            const apiPath = "/api/users/@me";
+            
+            fetch(apiBase + apiPath, {
+                headers: { Authorization: "Bearer " + token }
             })
             .then(res => res.json())
             .then(data => {
@@ -86,6 +91,7 @@
             });
         }
     }
+
 
     function updateBalance() {
         fetch(`${BACKEND_URL}/api/balance/${userData.id}`)
