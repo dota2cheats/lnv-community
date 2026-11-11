@@ -150,6 +150,17 @@
             <button class="play-btn" onclick="play('roulette_zero')" style="background:#5cb85c;">Зеленое</button>
         </div>
     </div>
+    <div style="margin-top: 25px;">
+    <a href="shop.html" style="display:inline-block; background:#f0ad4e; color:#111; padding:12px 24px; text-decoration:none; font-weight:bold; border-radius:6px;">🛒 ПЕРЕЙТИ В ЛАВКУ КОНТРАБАНДЫ</a>
+</div>
+
+<div class="game-section">
+    <h3>📊 КАРТОТЕКА АРЕСТАНТОВ (ТОП ПО СИГАМ)</h3>
+    <div id="leaderboard-list" style="max-height: 220px; overflow-y: auto; background: #111; border: 1px solid #333; border-radius: 6px; padding: 10px; text-align: left;">
+        Загрузка картотеки...
+    </div>
+</div>
+
 </div>
 
 <script>
@@ -323,6 +334,21 @@
             setButtonsState(false);
         });
     }
+    function loadLeaderboard() {
+    fetch(BACKEND_URL + "/api/users")
+        .then(res => res.json())
+        .then(users => {
+            const box = document.getElementById("leaderboard-list");
+            if (!box) return;
+            box.innerHTML = users.map((u, idx) => 
+                `<div style="display:flex; justify-content:space-between; padding:6px 4px; border-bottom:1px solid #222;">
+                    <span><b>#${idx + 1}</b> ${u.username}</span>
+                    <span style="color:#5cb85c; font-weight:bold;">${u.cigarettes} 🚬</span>
+                </div>`
+            ).join("");
+        });
+    }
+
 </script>
 </body>
 </html>
