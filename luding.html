@@ -2,23 +2,105 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Блатное Казино LNV</title>
     <style>
-        body { background: #121212; color: #fff; font-family: 'Courier New', monospace; text-align: center; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; border: 3px solid #333; padding: 20px; background: #1a1a1a; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        h1 { color: #e47c1a; text-shadow: 2px 2px #000; }
-        button { background: #e47c1a; color: white; border: none; padding: 10px 20px; font-size: 18px; cursor: pointer; font-weight: bold; margin: 10px; }
-        button:hover { background: #e47c1a; }
-        .balance-box { font-size: 20px; margin: 20px 0; color: #5cb85c; }
-        .game-section { display: none; margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; }
-        .reels { font-size: 50px; letter-spacing: 15px; margin: 15px 0; background: #000; padding: 10px; display: inline-block; border-radius: 5px; }
-        input { background: #222; color: #fff; border: 1px solid #444; padding: 8px; font-size: 16px; width: 100px; text-align: center; }
+        * { box-sizing: border-box; }
+        body { 
+            background: radial-gradient(circle at center, #1e1e1e 0%, #0d0d0d 100%); 
+            color: #e0e0e0; 
+            font-family: 'Courier New', monospace; 
+            text-align: center; 
+            margin: 0; padding: 20px;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 650px; 
+            margin: 0 auto; 
+            border: 3px solid #333; 
+            border-radius: 8px;
+            padding: 25px; 
+            background: #1a1a1a; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.9); 
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .win-glow { box-shadow: 0 0 35px rgba(92, 184, 92, 0.7) !important; border-color: #5cb85c !important; }
+        .lose-glow { box-shadow: 0 0 25px rgba(217, 83, 79, 0.5) !important; border-color: #d9534f !important; }
+
+        h1 { color: #e47c1a; text-shadow: 2px 2px #000; margin-top: 0; }
+        
+        button { 
+            background: #e47c1a; color: white; border: none; padding: 10px 20px; 
+            font-size: 16px; font-family: inherit; cursor: pointer; font-weight: bold; 
+            margin: 6px; border-radius: 4px; transition: transform 0.1s, background 0.2s;
+        }
+        button:hover:not(:disabled) { background: #c9302c; transform: translateY(-2px); }
+        button:active:not(:disabled) { transform: translateY(1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .quick-bets button { padding: 5px 10px; font-size: 13px; background: #262626; border: 1px solid #444; }
+        .quick-bets button:hover:not(:disabled) { background: #383838; }
+
+        .balance-box { 
+            font-size: 22px; margin: 15px 0; color: #5cb85c; 
+            background: #121212; padding: 10px; border-radius: 5px; border: 1px solid #2c2c2c;
+        }
+        .game-section { margin-top: 25px; border-top: 1px solid #333; padding-top: 20px; }
+        
+        input { 
+            background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;
+            padding: 8px; font-size: 18px; width: 120px; text-align: center; font-family: inherit;
+        }
+
+        /* Анимация Слотов */
+        .slot-machine {
+            display: flex; justify-content: center; gap: 12px; margin: 15px auto;
+            background: #0a0a0a; padding: 12px; border-radius: 6px; border: 2px solid #2e2e2e;
+            width: fit-content; box-shadow: inset 0 0 12px #000;
+        }
+        .reel {
+            width: 75px; height: 85px; background: #161616; border-radius: 5px;
+            font-size: 48px; display: flex; align-items: center; justify-content: center;
+            border: 1px solid #333; user-select: none;
+        }
+        .spinning { animation: blurRoll 0.1s infinite; filter: blur(2px); }
+        @keyframes blurRoll {
+            0% { transform: translateY(-4px); }
+            50% { transform: translateY(4px); }
+            100% { transform: translateY(-4px); }
+        }
+
+        /* Анимация Рулетки (бегущая дорожка) */
+        .roulette-wrapper {
+            position: relative; width: 100%; height: 68px; background: #0a0a0a;
+            border: 2px solid #333; border-radius: 5px; overflow: hidden; margin: 15px 0;
+        }
+        .roulette-pointer {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 100%; background: #f0ad4e; z-index: 10; box-shadow: 0 0 10px #f0ad4e;
+        }
+        .roulette-track {
+            display: flex; height: 100%; align-items: center;
+            transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
+        }
+        .r-cell {
+            min-width: 58px; height: 58px; margin: 0 3px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 18px; color: #fff;
+        }
+        .cell-red { background: #e44b45; }
+        .cell-black { background: #222; border: 1px solid #444; }
+        .cell-zero { background: #5cb85c; }
+
+        #status-banner {
+            min-height: 26px; font-size: 18px; margin-top: 15px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1> КАЗИНО "ОБЩАК LNV" </h1>
+<div class="container" id="main-box">
+    <h1>КАЗИНО "ОБЩАК LNV"</h1>
     
     <!-- Авторизация -->
     <div id="auth-block">
@@ -28,58 +110,84 @@
 
     <!-- Игровая панель -->
     <div id="game-block" style="display:none;">
-        <p>Добро пожаловать в хату, <b id="user-name">Арестант</b>!</p>
+        <p>Добро пожаловать в хату, <b id="user-name" style="color:#f0ad4e;">Арестант</b>!</p>
         <div class="balance-box">Твоя заначка: <span id="user-balance">0</span> 🚬</div>
         
-        <label>Ставка (сигарет): </label>
-        <input type="number" id="bet-amount" value="10" min="1">
+        <div>
+            <label>Ставка (сигарет): </label>
+            <input type="number" id="bet-amount" value="10" min="1">
+            <div class="quick-bets" style="margin-top:8px;">
+                <button onclick="changeBet(10)">+10</button>
+                <button onclick="changeBet(50)">+50</button>
+                <button onclick="multBet(2)">x2</button>
+                <button onclick="allIn()">Ва-банк</button>
+            </div>
+        </div>
+
+        <div id="status-banner">Делай ставку...</div>
 
         <!-- СЛОТЫ -->
-        <div class="game-section" style="display:block;">
+        <div class="game-section">
             <h3>ОДНОРУКИЙ БАНДЮГАН</h3>
-            <div class="reels" id="slots-reels">🎲🎲🎲</div><br>
-            <button onclick="play('slots')">Дёрнуть рычаг</button>
+            <div class="slot-machine">
+                <div class="reel" id="reel-1">🎲</div>
+                <div class="reel" id="reel-2">🎲</div>
+                <div class="reel" id="reel-3">🎲</div>
+            </div>
+            <button class="play-btn" onclick="play('slots')">Дёрнуть рычаг</button>
         </div>
 
         <!-- РУЛЕТКА -->
-        <div class="game-section" style="display:block;">
+        <div class="game-section">
             <h3>АРЕСТАНТСКАЯ РУЛЕТКА</h3>
             <p>Красное(x2) | Черное(x2) | Зеленое(x35)</p>
-            <button onclick="play('roulette_red')" style="background:#d9534f;">Красное</button>
-            <button onclick="play('roulette_black')" style="background:#222; border:1px solid #555;">Черное</button>
-            <button onclick="play('roulette_zero')" style="background:#5cb85c;">Зеленое</button>
-            <div id="roulette-result" style="margin-top:15px; font-size:18px;"></div>
+            <div class="roulette-wrapper">
+                <div class="roulette-pointer"></div>
+                <div class="roulette-track" id="roulette-track"></div>
+            </div>
+            <button class="play-btn" onclick="play('roulette_red')" style="background:#da4f4b;">Красное</button>
+            <button class="play-btn" onclick="play('roulette_black')" style="background:#222; border:1px solid #555;">Черное</button>
+            <button class="play-btn" onclick="play('roulette_zero')" style="background:#5cb85c;">Зеленое</button>
         </div>
     </div>
 </div>
 
 <script>
-    // НАСТРОЙКИ СВЯЗИ (Замени на свои)
     const CLIENT_ID = "1569821348069511298"; 
     const REDIRECT_URI = "https://dota2cheats.github.io/lnv-community/luding.html";
-    const BACKEND_URL = "http://localhost:8000"; // Когда зальешь бота в облако, поменяешь этот адрес
+    const BACKEND_URL = "http://localhost:8000";
 
-    let userData = { id: null, username: "" };
+    let userData = { id: null, username: "", balance: 0 };
+    let isSpinning = false;
+    const slotIcons = ["🚬", "🎰", "👑", "👮‍♂️", "🎲"];
 
-    function loginDiscord() {
-        const url = "https://discord.com/oauth2/authorize?client_id=" + CLIENT_ID + "&response_type=token&redirect_uri=" + encodeURIComponent(REDIRECT_URI) + "&scope=identify";
-        window.location.href = url;
+    function buildRouletteTrack() {
+        const track = document.getElementById("roulette-track");
+        let html = "";
+        for (let i = 0; i < 60; i++) {
+            const num = i % 37;
+            const cls = num === 0 ? "cell-zero" : (num % 2 === 0 ? "cell-red" : "cell-black");
+            html += `<div class="r-cell ${cls}">${num}</div>`;
+        }
+        track.innerHTML = html;
     }
 
+    function loginDiscord() {
+        const base = "https://discord.com";
+        const path = "/oauth2/authorize";
+        const params = "?client_id=" + CLIENT_ID + "&response_type=token&redirect_uri=" + encodeURIComponent(REDIRECT_URI) + "&scope=identify";
+        window.location.href = base + path + params;
+    }
 
-    // Логика захвата токена Дискорда после входа
-    // Логика захвата токена Дискорда после входа
     window.onload = function() {
+        buildRouletteTrack();
         const hash = window.location.hash;
         if (hash.includes("access_token")) {
             const token = new URLSearchParams(hash.replace("#", "?")).get("access_token");
-            
             const apiBase = "https://discord.com";
             const apiPath = "/api/users/@me";
             
-            fetch(apiBase + apiPath, {
-                headers: { Authorization: "Bearer " + token }
-            })
+            fetch(apiBase + apiPath, { headers: { Authorization: "Bearer " + token } })
             .then(res => res.json())
             .then(data => {
                 userData.id = data.id;
@@ -92,18 +200,83 @@
         }
     }
 
-
     function updateBalance() {
         fetch(`${BACKEND_URL}/api/balance/${userData.id}`)
             .then(res => res.json())
             .then(data => {
+                userData.balance = data.cigarettes;
                 document.getElementById("user-balance").innerText = data.cigarettes;
-            }).catch(() => alert("Бот-сервер спит или не запущен!"));
+            });
+    }
+
+    function changeBet(val) {
+        const inp = document.getElementById("bet-amount");
+        inp.value = (parseInt(inp.value) || 0) + val;
+    }
+    function multBet(mult) {
+        const inp = document.getElementById("bet-amount");
+        inp.value = (parseInt(inp.value) || 1) * mult;
+    }
+    function allIn() {
+        document.getElementById("bet-amount").value = userData.balance;
+    }
+
+    function setButtonsState(disabled) {
+        document.querySelectorAll(".play-btn").forEach(btn => btn.disabled = disabled);
+    }
+
+    function animateSlots(finalReels, callback) {
+        const reels = [document.getElementById("reel-1"), document.getElementById("reel-2"), document.getElementById("reel-3")];
+        reels.forEach(r => r.classList.add("spinning"));
+
+        const interval = setInterval(() => {
+            reels.forEach(r => {
+                if (r.classList.contains("spinning")) {
+                    r.innerText = slotIcons[Math.floor(Math.random() * slotIcons.length)];
+                }
+            });
+        }, 70);
+
+        setTimeout(() => { reels[0].classList.remove("spinning"); reels[0].innerText = finalReels[0]; }, 600);
+        setTimeout(() => { reels[1].classList.remove("spinning"); reels[1].innerText = finalReels[1]; }, 1100);
+        setTimeout(() => { 
+            reels[2].classList.remove("spinning"); 
+            reels[2].innerText = finalReels[2]; 
+            clearInterval(interval);
+            callback();
+        }, 1600);
+    }
+
+    function animateRoulette(targetNumber, callback) {
+        const track = document.getElementById("roulette-track");
+        track.style.transition = "none";
+        track.style.transform = "translateX(0px)";
+        track.offsetHeight;
+
+        const cellWidth = 64;
+        const wrapperWidth = document.querySelector(".roulette-wrapper").offsetWidth;
+        const targetIndex = 37 + targetNumber;
+        const randomOffset = Math.floor(Math.random() * 36) - 18;
+        const stopPosition = (targetIndex * cellWidth) - (wrapperWidth / 2) + (cellWidth / 2) + randomOffset;
+
+        track.style.transition = "transform 3s cubic-bezier(0.12, 0.85, 0.25, 1)";
+        track.style.transform = `translateX(-${stopPosition}px)`;
+
+        setTimeout(callback, 3100);
     }
 
     function play(gameType) {
+        if (isSpinning) return;
         const bet = parseInt(document.getElementById("bet-amount").value);
-        if(!bet || bet <= 0) return alert("Ставь правильное количество сигарет!");
+        if (!bet || bet <= 0) return;
+
+        isSpinning = true;
+        setButtonsState(true);
+        const box = document.getElementById("main-box");
+        const banner = document.getElementById("status-banner");
+        box.classList.remove("win-glow", "lose-glow");
+        banner.style.color = "#f0ad4e";
+        banner.innerText = "Крутим...";
 
         fetch(`${BACKEND_URL}/api/play`, {
             method: "POST",
@@ -116,25 +289,38 @@
             })
         })
         .then(res => {
-            if(!res.ok) return res.json().then(err => { throw new Error(err.detail) });
+            if (!res.ok) return res.json().then(err => { throw new Error(err.detail) });
             return res.json();
         })
         .then(data => {
-            if(data.game === 'slots') {
-                document.getElementById("slots-reels").innerText = data.reels.join("");
-            } else if(data.game === 'roulette') {
-                const colorText = data.color === 'red' ? 'Красное' : data.color === 'black' ? 'Черное' : 'Нулина';
-                document.getElementById("roulette-result").innerText = `Выпало: Число ${data.number} (${colorText})`;
-            }
-            
-            document.getElementById("user-balance").innerText = data.balance;
-            if(data.win) {
-                alert(`Фартануло! Поднял куш: +${data.win_amount} 🚬`);
-            } else {
-                alert("Сиги ушли в общак.");
+            const finishRound = () => {
+                userData.balance = data.balance;
+                document.getElementById("user-balance").innerText = data.balance;
+                if (data.win) {
+                    box.classList.add("win-glow");
+                    banner.style.color = "#5cb85c";
+                    banner.innerText = `🔥 ФАРТАНУЛО! Поднял +${data.win_amount} 🚬`;
+                } else {
+                    box.classList.add("lose-glow");
+                    banner.style.color = "#e47c1a";
+                    banner.innerText = `💀 МИМО. Сигареты ушли в общак.`;
+                }
+                isSpinning = false;
+                setButtonsState(false);
+            };
+
+            if (data.game === 'slots') {
+                animateSlots(data.reels, finishRound);
+            } else if (data.game === 'roulette') {
+                animateRoulette(data.number, finishRound);
             }
         })
-        .catch(err => alert(err.message));
+        .catch(err => {
+            banner.style.color = "#e47c1a";
+            banner.innerText = err.message;
+            isSpinning = false;
+            setButtonsState(false);
+        });
     }
 </script>
 </body>
