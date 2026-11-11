@@ -95,6 +95,19 @@
         #status-banner {
             min-height: 26px; font-size: 18px; margin-top: 15px; font-weight: bold;
         }
+        .bj-table {
+            background: #143622; border: 3px solid #2e1d12; border-radius: 10px;
+            padding: 15px; margin: 15px 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+        .cards-row { display: flex; justify-content: center; gap: 10px; min-height: 75px; margin: 8px 0; flex-wrap: wrap; }
+        .playing-card {
+            width: 52px; height: 74px; background: #f4f4f4; color: #111; border-radius: 6px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 18px; box-shadow: 2px 3px 6px rgba(0,0,0,0.6);
+        }
+        .card-red { color: #c9302c; }
+        .card-hidden { background: #2c2c2c; color: #f0ad4e; border: 1px dashed #666; }
+
     </style>
 </head>
 <body>
@@ -149,6 +162,23 @@
             <button class="play-btn" onclick="play('roulette_black')" style="background:#222; border:1px solid #555;">Черное</button>
             <button class="play-btn" onclick="play('roulette_zero')" style="background:#5cb85c;">Зеленое</button>
         </div>
+                <!-- БЛЭКДЖЕК -->
+        <div class="game-section">
+            <h3>🃏 БЛЭКДЖЕК СО СМОТРЯЩИМ (21)</h3>
+            <div class="bj-table">
+                <div>Рука Смотрящего: <b id="bj-dealer-score">0</b></div>
+                <div class="cards-row" id="bj-dealer-cards"></div>
+                
+                <div style="margin-top: 12px;">Твоя рука: <b id="bj-player-score">0</b></div>
+                <div class="cards-row" id="bj-player-cards"></div>
+            </div>
+            <div id="bj-controls">
+                <button class="play-btn" id="bj-start-btn" onclick="bjAction('start')" style="background:#2e6da4;">Раздать карты</button>
+                <button id="bj-hit-btn" onclick="bjAction('hit')" style="display:none; background:#5cb85c;">Ещё карту</button>
+                <button id="bj-stand-btn" onclick="bjAction('stand')" style="display:none; background:#f0ad4e; color:#111;">Хватит</button>
+            </div>
+        </div>
+
     </div>
     <div style="margin-top: 25px;">
     <a href="shop.html" style="display:inline-block; background:#f0ad4e; color:#111; padding:12px 24px; text-decoration:none; font-weight:bold; border-radius:6px;">🛒 ПЕРЕЙТИ В ЛАВКУ КОНТРАБАНДЫ</a>
@@ -358,6 +388,67 @@
         .catch(() => {
             const box = document.getElementById("leaderboard-list");
             if (box) box.innerHTML = "Нет связи с общаком (сервер выключен).";
+        });
+    }
+
+    function renderCards(containerId, cards) {
+        const box = document.getElementById(containerId);
+        box.innerHTML = cards.map(c => {
+            if (c.rank === "?") return `<div class="playing-card card-hidden">🃏</div>`;
+            const isRed = c.suit === "♥️" || c.suit === "♦️";
+            return `<div class="playing-card ${isRed ? 'card-red' : ''}"><div>${c.rank}</div><div>${c.suit}</div></div>`;
+        }).join("");
+    }
+
+    function bjAction(action) {
+        const bet = parseInt(document.getElementById("bet-amount").value) || 0;
+        if (action === "start" && bet <= 0) return;
+
+        const box = document.getElementById("main-box");
+        const banner = document.getElementById("status-banner");
+        box.classList.remove("win-glow", "lose-glow");
+
+        fetch(`${BACKEND_URL}/api/bj/${action}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userData.id, username: userData.username, bet: bet })
+        })
+        .then(res => {
+            if (!res.ok) return res.json().then(err => { throw new Error(err.detail) });
+            return res.json();
+        })
+        .then(data => {
+            renderCards("bj-dealer-cards", data.dealer_hand);
+            renderCards("bj-player-cards", data.player_hand);
+            document.getElementById("bj-dealer-score").innerText = data.dealer_score;
+            document.getElementById("bj-player-score").innerText = data.player_score;
+
+            if (data.balance !== null && data.balance !== undefined) {
+                userData.balance = data.balance;
+                document.getElementById("user-balance").innerText = data.balance;
+            }
+
+            if (data.status === "playing") {
+                banner.style.color = "#f0ad4e";
+                banner.innerText = "Твой ход: берешь еще или хватит?";
+                document.getElementById("bj-start-btn").style.display = "none";
+                document.getElementById("bj-hit-btn").style.display = "inline-block";
+                document.getElementById("bj-stand-btn").style.display = "inline-block";
+            } else {
+                banner.style.color = data.win ? "#5cb85c" : "#d9534f";
+                banner.innerText = data.message;
+                if (data.win) box.classList.add("win-glow");
+                else box.classList.add("lose-glow");
+
+                document.getElementById("bj-start-btn").style.display = "inline-block";
+                document.getElementById("bj-hit-btn").style.display = "none";
+                document.getElementById("bj-stand-btn").style.display = "none";
+                if (typeof loadLeaderboard === "function") loadLeaderboard();
+            }
+        })
+        .catch(err => {
+            banner.style.color = "#d9534f";
+            banner.innerText = err.message;
         });
     }
 
