@@ -400,8 +400,13 @@
             body: JSON.stringify(payload)
         })
         .then(res => {
-            if (!res.ok) return res.json().then(err => { throw new Error(err.detail || "Ошибка покупки"); });
-            return res.json();
+            if (!res.ok) {
+                return res.json().then(err => {
+                const msg = Array.isArray(err.detail) ? err.detail[0].msg : err.detail;
+                throw new Error(msg);
+            });
+            }
+
         })
         .then(data => {
             showToast(data.message || "Сделка прошла успешно!", false);
@@ -428,11 +433,11 @@
     }
 
     function buyItem(item, targetElemId = null, textElemId = null, amountElemId = null) {
-        const payload = { user_id: userData.id, username: userData.username, item: item };
+        const payload = { user_id: Number(userData.id), username: userData.username, item: item };
         if (targetElemId) {
             const val = document.getElementById(targetElemId).value;
             if (!val) return showToast("Выбери арестанта из списка!", true);
-            payload.target_id = val;
+            payload.target_id = Number(val);
         }
         if (textElemId) {
             payload.text = document.getElementById(textElemId).value.trim();
