@@ -84,7 +84,7 @@
             transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
         }
         .r-cell {
-            min-width: 58px; height: 58px; margin: 0 3px; border-radius: 4px;
+            width: 60px; flex: 0 0 60px; height: 58px; margin: 0 3px; border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; font-size: 18px; color: #fff;
         }
@@ -164,7 +164,7 @@
     function buildRouletteTrack() {
         const track = document.getElementById("roulette-track");
         let html = "";
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 111; i++) {
             const num = i % 37;
             const cls = num === 0 ? "cell-zero" : (num % 2 === 0 ? "cell-red" : "cell-black");
             html += `<div class="r-cell ${cls}">${num}</div>`;
@@ -253,11 +253,12 @@
         track.style.transform = "translateX(0px)";
         track.offsetHeight;
 
-        const cellWidth = 64;
-        const wrapperWidth = document.querySelector(".roulette-wrapper").offsetWidth;
         const targetIndex = 37 + targetNumber;
+        const targetCell = track.children[targetIndex];
+        const wrapperWidth = document.querySelector(".roulette-wrapper").offsetWidth;
         const randomOffset = Math.floor(Math.random() * 36) - 18;
-        const stopPosition = (targetIndex * cellWidth) - (wrapperWidth / 2) + (cellWidth / 2) + randomOffset;
+        const stopPosition = targetCell.offsetLeft + (targetCell.offsetWidth / 2) - (wrapperWidth / 2) + randomOffset;
+
 
         track.style.transition = "transform 3s cubic-bezier(0.12, 0.85, 0.25, 1)";
         track.style.transform = `translateX(-${stopPosition}px)`;
