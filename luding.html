@@ -192,6 +192,7 @@
 
     window.onload = function() {
         buildRouletteTrack();
+        loadLeaderboard();
         const hash = window.location.hash;
         if (hash.includes("access_token")) {
             const token = new URLSearchParams(hash.replace("#", "?")).get("access_token");
@@ -218,7 +219,7 @@
                 userData.balance = data.cigarettes;
                 document.getElementById("user-balance").innerText = data.cigarettes;
             });
-        loadLeaderboard()
+        loadLeaderboard();
     }
 
     function changeBet(val) {
@@ -334,21 +335,32 @@
             isSpinning = false;
             setButtonsState(false);
         });
+        loadLeaderboard();
     }
     function loadLeaderboard() {
     fetch(BACKEND_URL + "/api/users")
         .then(res => res.json())
-        .then(users => {
+        .then(data => {
             const box = document.getElementById("leaderboard-list");
             if (!box) return;
-            box.innerHTML = users.map((u, idx) => 
+            const list = data.users || data;
+            if (!Array.isArray(list) || list.length === 0) {
+                box.innerHTML = "В картотеке пока пусто...";
+                return;
+            }
+            box.innerHTML = list.map((u, idx) => 
                 `<div style="display:flex; justify-content:space-between; padding:6px 4px; border-bottom:1px solid #222;">
                     <span><b>#${idx + 1}</b> ${u.username}</span>
                     <span style="color:#5cb85c; font-weight:bold;">${u.cigarettes} 🚬</span>
                 </div>`
             ).join("");
+        })
+        .catch(() => {
+            const box = document.getElementById("leaderboard-list");
+            if (box) box.innerHTML = "Нет связи с общаком (сервер выключен).";
         });
     }
+
 
 </script>
 </body>
