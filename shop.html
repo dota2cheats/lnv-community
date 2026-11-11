@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лавка Контрабанды — ОБЩАК LNV</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at center, #1e1e1e 0%, #0d0d0d 100%);
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            border: 2px solid #3a3a3a;
+            border-radius: 10px;
+            padding: 25px;
+            background: #161616;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2e2e2e;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        h1 { color: #f0ad4e; text-shadow: 2px 2px #000; margin: 0; font-size: 26px; }
+        .nav-btn {
+            background: #2c2c2c;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .nav-btn:hover { background: #3d3d3d; }
+        .balance-bar {
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 12px 20px;
+            font-size: 20px;
+            color: #5cb85c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #toast {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #222;
+            border-left: 5px solid #f0ad4e;
+            color: #fff;
+            padding: 15px 22px;
+            border-radius: 6px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            font-size: 16px;
+            z-index: 1000;
+            display: none;
+            max-width: 400px;
+        }
+        .category-title {
+            color: #d9534f;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 8px;
+            margin: 30px 0 15px 0;
+            font-size: 20px;
+            text-transform: uppercase;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+        .card:hover { border-color: #555; transform: translateY(-2px); }
+        .card h3 { margin: 0 0 8px 0; color: #fff; font-size: 18px; }
+        .card p { margin: 0 0 15px 0; color: #aaa; font-size: 13px; line-height: 1.4; }
+        .price { color: #5cb85c; font-weight: bold; font-size: 15px; margin-bottom: 12px; }
+        select, input {
+            width: 100%;
+            background: #121212;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 9px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            background: #d9534f;
+            color: #fff;
+            border: none;
+            padding: 11px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover:not(:disabled) { background: #c9302c; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-gold { background: #f0ad4e; color: #111; }
+        .btn-gold:hover:not(:disabled) { background: #ec971f; }
+        .btn-green { background: #5cb85c; color: #fff; }
+        .btn-green:hover:not(:disabled) { background: #449d44; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🛒 ЛАВКА КОНТРАБАНДЫ</h1>
+        <a href="luding.html" class="nav-btn">🎰 ВЕРНУТЬСЯ В КАЗИНО</a>
+    </div>
+
+    <div id="auth-block" style="text-align:center; padding:40px 0;">
+        <p style="font-size:18px;">Чтобы закупаться у барыги, сначала обоснуй кто ты:</p>
+        <button onclick="loginDiscord()" style="width:auto; padding:12px 28px;">Войти через Discord</button>
+    </div>
+
+    <div id="shop-block" style="display:none;">
+        <div class="balance-bar">
+            <span>Арестант: <b id="user-name" style="color:#f0ad4e;">...</b></span>
+            <span>Заначка: <b id="user-balance">0</b> 🚬</span>
+        </div>
+
+        <!-- КАТЕГОРИЯ 1: БЕСПРЕДЕЛ И ВЛАСТЬ -->
+        <div class="category-title">😈 Беспредел и власть над хатой</div>
+        <div class="grid">
+            <div class="card">
+                <div>
+                    <h3>🚨 Заказать шмон</h3>
+                    <p>Отправить выбранного арестанта в тайм-аут (карцер).</p>
+                    <select class="user-select" id="target-shmon"></select>
+                    <select id="shmon-duration">
+                        <option value="shmon_1m">1 минута — 3 000 🚬</option>
+                        <option value="shmon_5m">5 минут — 10 000 🚬</option>
+                        <option value="shmon_1h">1 час — 100 000 🚬</option>
+                        <option value="shmon_1d">1 день — 450 000 🚬</option>
+                    </select>
+                </div>
+                <button onclick="buyShmon()">Заказать шмон</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>🧹 Под шконарь</h3>
+                    <p>Замутить выбранного участника. Кулдаун: раз в 3 часа.</p>
+                    <select class="user-select" id="target-shkonar"></select>
+                    <select id="shkonar-duration">
+                        <option value="shkonar_1m">1 минута — 200 🚬</option>
+                        <option value="shkonar_5m">5 минут — 1 000 🚬</option>
+                    </select>
+                </div>
+                <button onclick="buyShkonar()">Загнать под шконарь</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>🐓 Опустить</h3>
+                    <p>Вешает роль «Опущенный» на 24 часа и закрывает доступ ко всем ГС, кроме одного.</p>
+                    <div class="price">Цена: 6 000 🚬</div>
+                    <select class="user-select" id="target-opustit"></select>
+                </div>
+                <button onclick="buyItem('opustit', 'target-opustit')">Опустить</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>🏷️ Смена погоняла</h3>
+                    <p>Принудительно меняет никнейм выбранному участнику на сервере.</p>
+                    <div class="price">Цена: 1 000 🚬</div>
+                    <select class="user-select" id="target-nick"></select>
+                    <input type="text" id="input-nick" placeholder="Новое погоняло (до 32 симв.)" maxlength="32">
+                </div>
+                <button onclick="buyItem('change_nick', 'target-nick', 'input-nick')">Сменить погоняло</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>🥷 Украсть сиги</h3>
+                    <p>Крысануть у выбранного арестанта 50 сиг. Кулдаун: раз в час.</p>
+                    <div class="price">Бесплатно (риск кармы)</div>
+                    <select class="user-select" id="target-steal"></select>
+                </div>
+                <button onclick="buyItem('steal', 'target-steal')">Обчистить карман</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>💣 Беспредел</h3>
+                    <p>Ворует по 10 сиг у КАЖДОГО участника из базы данных. Кулдаун: раз в час.</p>
+                    <div class="price">Цена: 50 🚬</div>
+                </div>
+                <button onclick="buyItem('bespredel')">Устроить беспредел</button>
+            </div>
+        </div>
+
+        <!-- КАТЕГОРИЯ 2: СТАТУС И ПРИВИЛЕГИИ -->
+        <div class="category-title">👑 Статус и привилегии</div>
+        <div class="grid">
+            <div class="card">
+                <div>
+                    <h3>👑 Вор в законе</h3>
+                    <p>Роль «Вор в законе», доступ в ГС «Блатные», управление никами, пинг @everyone, управление сообщениями, обход слоумода, внешние звуки, перемещение и коронация в чате!</p>
+                    <div class="price">Цена: 10 000 🚬</div>
+                </div>
+                <button class="btn-gold" onclick="buyItem('vor_v_zakone')">Короноваться</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>🛡️ Ксива неприкосновенности</h3>
+                    <p>Защищает на 24 часа от шмона, опускания, смены ника, кражи сиг и беспредела.</p>
+                    <div class="price">Цена: 500 🚬</div>
+                </div>
+                <button class="btn-green" onclick="buyItem('immunity')">Купить ксиву</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>🏠 Своя хата</h3>
+                    <p>Создает личный голосовой канал и перекидывает туда. Удалится сам, когда все выйдут.</p>
+                    <div class="price">Цена: 250 🚬</div>
+                    <input type="text" id="input-khata" placeholder="Название хаты (необязательно)" maxlength="30">
+                </div>
+                <button onclick="buyItem('svoya_khata', null, 'input-khata')">Открыть хату</button>
+            </div>
+        </div>
+
+        <!-- КАТЕГОРИЯ 3: ДВИЖ, ОБЩАК И ИГРЫ -->
+        <div class="category-title">🎲 Движ, общак и разборки</div>
+        <div class="grid">
+            <div class="card">
+                <div>
+                    <h3>🎲 Кости (2 кубика)</h3>
+                    <p>Бросок 2 кубиков против выбранного арестанта. У кого больше очков — забирает ставку! Лимит: 5 игр в 3 мин.</p>
+                    <select class="user-select" id="target-dice"></select>
+                    <input type="number" id="input-dice-bet" placeholder="Ставка в сигах" min="1" value="50">
+                </div>
+                <button class="btn-gold" onclick="buyItem('dice', 'target-dice', null, 'input-dice-bet')">Бросить зары</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>🤝 Перевод пацанам</h3>
+                    <p>Передать свои сиги другому арестанту. Лимит: до 1 500 сиг в час.</p>
+                    <select class="user-select" id="target-transfer"></select>
+                    <input type="number" id="input-transfer-amount" placeholder="Сумма перевода (до 1500)" min="1" max="1500" value="100">
+                </div>
+                <button class="btn-green" onclick="buyItem('transfer', 'target-transfer', null, 'input-transfer-amount')">Перевести сиги</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>💰 Скинуться на общак</h3>
+                    <p>Списывает введенную сумму: 50% делится поровну между всеми арестантами из базы данных!</p>
+                    <input type="number" id="input-obshak-amount" placeholder="Сколько закинуть в общак" min="2" value="100">
+                </div>
+                <button class="btn-green" onclick="buyItem('obshak', null, null, 'input-obshak-amount')">Подогреть братву</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>📣 Заказ катки</h3>
+                    <p>Громкий созыв братвы на игру от лица Смотрящего в общий чат.</p>
+                    <div class="price">Цена: 350 🚬</div>
+                    <input type="text" id="input-katka" placeholder="Во что идем? (напр. Dota 2 / CS2)" maxlength="50">
+                </div>
+                <button onclick="buyItem('zakaz_katki', null, 'input-katka')">Созвать на катку</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h3>✉️ Пустить весточку по хате</h3>
+                    <p>Отправляет анонимное сообщение от имени бота в общий чат.</p>
+                    <div class="price">Цена: 5 🚬</div>
+                    <input type="text" id="input-vestochka" placeholder="Текст малявы..." maxlength="200">
+                </div>
+                <button onclick="buyItem('vestochka', null, 'input-vestochka')">Отправить маляву</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    const CLIENT_ID = "1569821348069511298";
+    const REDIRECT_URI = "https://dota2cheats.github.io/lnv-community/shop.html";
+    const BACKEND_URL = "http://localhost:8000";
+
+    let userData = { id: null, username: "", balance: 0 };
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById("toast");
+        toast.style.borderLeftColor = isError ? "#d9534f" : "#5cb85c";
+        toast.innerText = msg;
+        toast.style.display = "block";
+        clearTimeout(window.toastTimer);
+        window.toastTimer = setTimeout(() => { toast.style.display = "none"; }, 5000);
+    }
+
+    function loginDiscord() {
+        const base = "https://discord.com";
+        const path = "/oauth2/authorize";
+        const params = "?client_id=" + CLIENT_ID + "&response_type=token&redirect_uri=" + encodeURIComponent(REDIRECT_URI) + "&scope=identify";
+        window.location.href = base + path + params;
+    }
+
+    window.onload = function() {
+        const saved = localStorage.getItem("lnv_user");
+        const hash = window.location.hash;
+
+        if (hash.includes("access_token")) {
+            const token = new URLSearchParams(hash.replace("#", "?")).get("access_token");
+            fetch("https://discord.com" + "/api/users/@me", {
+                headers: { Authorization: "Bearer " + token }
+            })
+            .then(res => res.json())
+            .then(data => {
+                userData.id = data.id;
+                userData.username = data.username;
+                localStorage.setItem("lnv_user", JSON.stringify(userData));
+                initShop();
+            });
+        } else if (saved) {
+            userData = JSON.parse(saved);
+            if (userData && userData.id) {
+                initShop();
+            }
+        }
+    };
+
+    function initShop() {
+        document.getElementById("auth-block").style.display = "none";
+        document.getElementById("shop-block").style.display = "block";
+        document.getElementById("user-name").innerText = userData.username;
+        refreshData();
+    }
+
+    function refreshData() {
+        fetch(BACKEND_URL + "/api/balance/" + userData.id)
+            .then(res => res.json())
+            .then(data => {
+                if (data.cigarettes !== undefined) {
+                    userData.balance = data.cigarettes;
+                    document.getElementById("user-balance").innerText = data.cigarettes;
+                }
+            })
+            .catch(() => showToast("Нет связи с сервером бота!", true));
+
+        fetch(BACKEND_URL + "/api/users")
+            .then(res => res.json())
+            .then(users => {
+                const selects = document.querySelectorAll(".user-select");
+                const optionsHtml = users
+                    .filter(u => String(u.discord_id) !== String(userData.id))
+                    .map(u => `<option value="${u.discord_id}">${u.username} (${u.cigarettes} 🚬)</option>`)
+                    .join("");
+                selects.forEach(sel => {
+                    const prev = sel.value;
+                    sel.innerHTML = optionsHtml || '<option value="">Нет других арестантов</option>';
+                    if (prev) sel.value = prev;
+                });
+            });
+    }
+
+    function sendPurchase(payload) {
+        document.querySelectorAll("button").forEach(b => b.disabled = true);
+        fetch(BACKEND_URL + "/api/shop/buy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if (!res.ok) return res.json().then(err => { throw new Error(err.detail || "Ошибка покупки"); });
+            return res.json();
+        })
+        .then(data => {
+            showToast(data.message || "Сделка прошла успешно!", false);
+            refreshData();
+        })
+        .catch(err => showToast(err.message, true))
+        .finally(() => {
+            document.querySelectorAll("button").forEach(b => b.disabled = false);
+        });
+    }
+
+    function buyShmon() {
+        const targetId = document.getElementById("target-shmon").value;
+        const item = document.getElementById("shmon-duration").value;
+        if (!targetId) return showToast("Выбери жертву!", true);
+        sendPurchase({ user_id: userData.id, username: userData.username, item: item, target_id: targetId });
+    }
+
+    function buyShkonar() {
+        const targetId = document.getElementById("target-shkonar").value;
+        const item = document.getElementById("shkonar-duration").value;
+        if (!targetId) return showToast("Выбери жертву!", true);
+        sendPurchase({ user_id: userData.id, username: userData.username, item: item, target_id: targetId });
+    }
+
+    function buyItem(item, targetElemId = null, textElemId = null, amountElemId = null) {
+        const payload = { user_id: userData.id, username: userData.username, item: item };
+        if (targetElemId) {
+            const val = document.getElementById(targetElemId).value;
+            if (!val) return showToast("Выбери арестанта из списка!", true);
+            payload.target_id = val;
+        }
+        if (textElemId) {
+            payload.text = document.getElementById(textElemId).value.trim();
+        }
+        if (amountElemId) {
+            payload.amount = parseInt(document.getElementById(amountElemId).value) || 0;
+        }
+        sendPurchase(payload);
+    }
+</script>
+</body>
+</html>
